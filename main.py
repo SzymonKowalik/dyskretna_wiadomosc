@@ -1,5 +1,6 @@
 import math
 
+
 def sprawdz_pozycje(pozycja, przyklad):
     """Sprawdza czy pozycja w wyniku jest zerem czy jedynką."""
     dl_czesci = 2 ** pozycja
@@ -28,44 +29,33 @@ def wyzeruj(binarna, miejsca):
     return nowa_binarna
 
 
-def zaszyfruj(wynik):
-    """Szyfruje wiadomosc bez negacji."""
-    szyfrowane = ''
-    for i in range(2**len(wynik)):
+def sprawdz_negacje(wynik, przyklad):
+    """Szyfruje wiadomosc bez negacji sprawdzając czy liczba zmian
+    jest większa niż dopuszczalna. Wtedy następuje negacje."""
+    max_zmiany = 2**(len(wynik) - 2) - 1
+    zmiany = 0
+
+    for i in range(2**len(wynik)//2):
         obecne = f"{bin(i)[2:]:0>{len(wynik)}}"
         maska_obecne = wyzeruj(obecne, wynik)
         miejsce_szyfru = str(maska_obecne.count('1') % 2)
-        szyfrowane += miejsce_szyfru
-    return szyfrowane
-
-
-def sprawdz_negacje(szyfrowane, przyklad):
-    """Sprawdza czy zaszyfrowany napis jest zanegowany czy nie"""
-    tabela_negacji = str.maketrans('01', '10')
-
-    bez_negacji = szyfrowane
-    z_negacja = szyfrowane.translate(tabela_negacji)
-
-    bez_negacji_zgodne = 0
-    z_negacja_zgodne = 0
-
-    for b, z, p in zip(bez_negacji, z_negacja, przyklad):
-        if b == p: bez_negacji_zgodne += 1
-        if z == p: z_negacja_zgodne += 1
-    return '1' if z_negacja_zgodne > bez_negacji_zgodne else '0'
+        if str(przyklad[i]) != miejsce_szyfru:
+            zmiany += 1
+            if zmiany > max_zmiany:
+                return '1'
+    return '0'
 
 
 def rozwiazanie(przyklad):
     """Zwraca rozwiązanie dla danego przykładu."""
-    ilosc_zmiennych = int(math.log2(len(przyklad))) # + 1 na negacje potem
+    ilosc_zmiennych = int(math.log2(len(przyklad)))  # + 1 na negacje potem
     wynik = ''
     # Odszyfrowuje wiadomosc
     for zmienna in range(1, ilosc_zmiennych+1):
         wynik = sprawdz_pozycje(zmienna, przyklad) + wynik
 
-    szyfrowane = zaszyfruj(wynik)
     # Dodanie bitu negacji do wyniku
-    wynik = sprawdz_negacje(szyfrowane, przyklad) + wynik
+    wynik = sprawdz_negacje(wynik, przyklad) + wynik
 
     return wynik
 
